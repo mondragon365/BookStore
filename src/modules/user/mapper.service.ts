@@ -1,8 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { TypeMapper } from 'ts-mapper';
-// import { UserDto } from "src/modules/user/dto/user.dto";
 import { UserDto } from "../user/dto/user.dto";
-//import { User } from "src/modules/user/user.entity";
 import { User } from "../user/user.entity";
 
 @Injectable()

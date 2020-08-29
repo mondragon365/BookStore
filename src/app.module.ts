@@ -7,10 +7,11 @@ import { Configuration } from './config/config.key';
 import { DatabaseModule } from './database/database.module';
 import { UserModule } from './modules/user/user.module';
 import { RoleModule } from './modules/role/role.module';
-import { ShareddModule } from './sharedd/sharedd.module';
+import { SharedModule } from './shared/shared.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
-  imports: [ConfigModule, DatabaseModule, UserModule, RoleModule, ShareddModule],
+  imports: [ConfigModule, DatabaseModule, UserModule, RoleModule, SharedModule, AuthModule],
   controllers: [AppController],
   providers: [AppService],
 })

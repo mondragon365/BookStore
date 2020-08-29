@@ -1,27 +1,28 @@
-import { Controller, Get, Param, Post, Body, Put, Patch, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, Put, Patch, Delete, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './user.entity';
-import { UserDto } from './dto/user.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('users')
 export class UserController {
     constructor(private readonly _userService: UserService) {
     }
 
+    @UseGuards(AuthGuard())
     @Get()
-    async getUsers(): Promise<UserDto[]> {
+    async getUsers(): Promise<User[]> {
         const users = this._userService.getAll();
         return users;
     }
 
     @Get(':id')
-    async getUser(@Param('id', ParseIntPipe) id: number): Promise<UserDto> {
+    async getUser(@Param('id', ParseIntPipe) id: number): Promise<User> {
         const user = await this._userService.get(id);
         return user;
     }
 
     @Post()
-    async createUser(@Body() user: User): Promise<UserDto> {
+    async createUser(@Body() user: User): Promise<User> {
         const createdUser = await this._userService.create(user);
         return createdUser;
     }

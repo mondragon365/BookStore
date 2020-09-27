@@ -7,6 +7,8 @@ import { UserDetails } from './user.details.entity';
 import { getConnection } from 'typeorm';
 import { Role } from '../role/role.entity';
 import { status } from '../../shared/entity-status.enum';
+import { ReadUserDto, UpdateUserDto } from './dto';
+import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class UserService {
@@ -17,7 +19,7 @@ export class UserService {
         private readonly _roleRepository: RoleRepository,
     ) {
     }
-    async get(id: number): Promise<User> {
+    async get(id: number): Promise<ReadUserDto> {
         if (!id) {
             throw new BadRequestException('Id must be sent');
         }
@@ -25,26 +27,33 @@ export class UserService {
         if (!user) {
             throw new NotFoundException();
         }
-        return user;
+        return plainToClass(ReadUserDto, user);
     }
-    async getAll(): Promise<User[]> {
+    async getAll(): Promise<ReadUserDto[]> {
         const users = await this._userRepository.find({ where: { status: status.ACTIVE } });
-        return users;
+        return users.map((user: User) => plainToClass(ReadUserDto, user));
     }
-    async create(user: User): Promise<User> {
-        const detail = new UserDetails();
-        user.details = detail;
+    // async create(user: User): Promise<User> {
+    //     const detail = new UserDetails();
+    //     user.details = detail;
 
-        const repo = await getConnection().getRepository(Role);
-        const defaultRole = await repo.findOne({ where: { name: 'GENERAL' } })
+    //     const repo = await getConnection().getRepository(Role);
+    //     const defaultRole = await repo.findOne({ where: { name: 'GENERAL' } })
 
-        user.roles = [defaultRole];
+    //     user.roles = [defaultRole];
 
-        const savedUser = await this._userRepository.save(user);
-        return savedUser;
-    }
-    async update(id: number, user: User): Promise<void> {
-        await this._userRepository.update(id, user);
+    //     const savedUser = await this._userRepository.save(user);
+    //     return savedUser;
+    // }
+    async update(id: number, user: Partial<UpdateUserDto>): Promise<ReadUserDto> {
+        const foundUser = await this._userRepository.findOne(id, { where: { status: status.ACTIVE } });
+        if (!foundUser) {
+            throw new NotFoundException();
+        }
+        foundUser.username = user.username;
+        const updatedUser = await this._userRepository.save(foundUser);
+        return plainToClass(ReadUserDto, updatedUser);
+        //await this._userRepository.update(id, user);
         //const updatedUser: User = await this._userRepository.update(id, user);
         //return this._mapperService.map<User, User>(updatedUser, new User());
     }
@@ -56,7 +65,7 @@ export class UserService {
         //await this._userRepository.delete(id);
         await this._userRepository.update(id, { status: status.INACTIVE })
     }
-    async setRoleToUserr(userId: number, roleId: number) {
+    async setRoleToUserr(userId: number, roleId: number): Promise<Boolean> {
         const userExist = await this._userRepository.findOne(userId, {
             where: { status: status.ACTIVE },
         });
